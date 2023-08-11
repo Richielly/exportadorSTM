@@ -1,6 +1,6 @@
 query = {
-    "StmBairro" : "SELECT baicod, bainom FROM public.arr_bai",
-    "StmEmpresa" : """SELECT 
+    "StmBairro": "SELECT baicod, bainom FROM public.arr_bai",
+    "StmEmpresa": """SELECT 
                         regexp_replace(p.concpfcnpj, '[\.\-\/\s]', '', 'g') as nrcnpj,
                         e.bcecod as nrinscricaoempresa,
                         'nrnaturezajuridica' as nrnaturezajuridica,
@@ -46,6 +46,59 @@ query = {
                         join public.arr_con p on (p.concod = e.bceconcod)
                         left join public.arr_bai b on (b.baicod = e.bcebaicod)
                         left join public.arr_mun1 m on (m.muncod = e.bcemuncod)
-                        left join public.arr_mun1 m2 on (m2.muncod = p.conmuncod) """,
-    "StmEmpresaSituacao":""" """
+                        left join public.arr_mun1 m2 on (m2.muncod = p.conmuncod)
+                        where p.conmuncod = 4127304 """,
+    "StmEmpresaSituacao": """ SELECT 
+                        regexp_replace(p.concpfcnpj, '[\.\-\/\s]', '', 'g') as nrcnpj,
+                        e.bcecod as nrinscricaoempresa,
+                        case e.bcesituacao 
+                            when 1 then 2
+                            when 2 then 4
+                            when 0 then 4 else 1 end as stempresa, --1, "Pré Cadastro | 2 - Ativa [1] | 3 - Inativa - Paralisada | 4 - Baixada [2][0]| 5 - Temporário
+                        coalesce(TO_CHAR(e.bcedatalt, 'DD/MM/YYYY'),TO_CHAR(e.bcedatcad, 'DD/MM/YYYY')) as dtaltempresasituacao,
+                        '' as nrprocessoaltempresa
+                        FROM public.arr_bce e
+                        left join public.arr_con p on (p.concod = e.bceconcod)
+                        where p.conmuncod = 4127304 """,
+    "StmEmpresaFora": """ SELECT
+                        regexp_replace(p.concpfcnpj, '[.\-/\s]', '', 'g') as nrcnpj,
+                        e.bcecod as nrinscricaoempresafora,
+                        e.bcesimpnac as tpopcaosimplesempfora,
+                        'nrnaturezajuridica' as nrnaturezajuridica,
+                        'isSubstitutoTributario' as issubstitutotributariofora, --1 - SIM | 2 - NÃO
+                        substring(ps.paisnom from 1 for 80) as pais
+                        FROM public.arr_bce e
+                        join public.arr_con p on (p.concod = e.bceconcod)
+                        left join public.arr_bai b on (b.baicod = e.bcebaicod)
+                        left join public.arr_mun1 m on (m.muncod = e.bcemuncod)
+                        left join public.arr_pais ps on (ps.paiscod = p.paiscod)
+                        where p.conmuncod != 4127304 """,
+    "StmEmpresaForaSituacao": """ SELECT
+                            regexp_replace(p.concpfcnpj, '[.\-/\s]', '', 'g') as nrcnpj,
+                            e.bcecod as nrinscricaoempresafora,
+                            coalesce(TO_CHAR(e.bcedatalt, 'DD/MM/YYYY'),TO_CHAR(e.bcedatcad, 'DD/MM/YYYY')) as dtaltsitempfora,
+                            case e.bcesituacao 
+                                when 1 then 2
+                                when 2 then 4
+                                when 0 then 4 else 1 end as stempresa --1, "Pré Cadastro | 2 - Ativa [1] | 3 - Inativa - Paralisada | 4 - Baixada [2][0]| 5 - Temporário
+                            FROM public.arr_bce e
+                            left join public.arr_con p on (p.concod = e.bceconcod)
+                            where p.conmuncod != 4127304 """,
+    "StmEmpresaForaAtividade": """ SELECT
+                                regexp_replace(p.concpfcnpj, '[-./\s]', '', 'g') as nrcnpj,
+                                e.bcecod as nrinscricaoempresafora,
+                                '' as nrsubclasse
+                                FROM public.arr_bce e
+                                left join public.arr_con p on (p.concod = e.bceconcod)
+                                where p.conmuncod != 4127304 """,
+    "StmEmpresaServico": """ select
+                        e.bcecod as nrmatriculaempresa,
+                        right(i.servitemcodmun, 2) as nrservicoaesubitem,
+                        left(i.servitemcodmun, 2) as nrservicoaeitem,
+                        'istomadorobrigatorio' as istomadorobrigatorio, --1 - SIM | 2 - NÃO) - Not Null
+                        'ispermiteisentoimune' as ispermiteisentoimune, --1 - SIM | 2 - NÃO) - Not Null
+                        'istributaemoutromunicipio' as istributaemoutromunicipio --1 - SIM | 2 - NÃO
+                        from arr_bce e
+                        join arr_bce8 s on (s.bcecod=e.bcecod)
+                        join arr_servitem i on (i.servitemcod=s.bceservitemcod) """
 }
