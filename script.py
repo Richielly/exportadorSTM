@@ -102,4 +102,5 @@ query = {
                         join arr_bce8 s on (s.bcecod=e.bcecod)
                         join arr_servitem i on (i.servitemcod=s.bceservitemcod) """
 
+
 }
